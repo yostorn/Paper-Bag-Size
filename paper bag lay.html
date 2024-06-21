@@ -208,6 +208,12 @@ function calculate() {
     drawLayoutMaster('canvas1', bagWidth, bagHeight, bagDepth, paperWidth1, paperHeight1, result1);
     drawLayoutMaster('canvas2', bagWidth, bagHeight, bagDepth, paperWidth2, paperHeight2, result2);
 }
+
+// เพิ่มการเรียกใช้ฟังก์ชัน calculate เมื่อโหลดหน้าเว็บ
+window.onload = function() {
+    calculate();
+};
+}
 }
     </script>
 </body>
