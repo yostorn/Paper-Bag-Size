@@ -92,10 +92,18 @@
     const bagPaperWidth = 2 * bagWidth + 2 * bagDepth + 2;
     const bagPaperHeight = bagHeight + (bagDepth / 2) + 2;
 
-    // คำนวณจำนวนถุงที่สามารถผลิตได้ต่อแผ่น
-    const bagsPerRow = Math.floor(paperWidth / bagPaperWidth);
-    const bagsPerColumn = Math.floor(paperHeight / bagPaperHeight);
-    const bagsPerSheet = bagsPerRow * bagsPerColumn;
+    // คำนวณจำนวนถุงที่สามารถผลิตได้ต่อแผ่น ทั้งแนวตั้งและแนวนอน
+    const bagsPerRowVertical = Math.floor(paperWidth / bagPaperWidth);
+    const bagsPerColumnVertical = Math.floor(paperHeight / bagPaperHeight);
+    const bagsPerSheetVertical = bagsPerRowVertical * bagsPerColumnVertical;
+
+    const bagsPerRowHorizontal = Math.floor(paperWidth / bagPaperHeight);
+    const bagsPerColumnHorizontal = Math.floor(paperHeight / bagPaperWidth);
+    const bagsPerSheetHorizontal = bagsPerRowHorizontal * bagsPerColumnHorizontal;
+
+    // เลือกการจัดวางที่ให้จำนวนถุงมากที่สุด
+    const isVerticalBetter = bagsPerSheetVertical >= bagsPerSheetHorizontal;
+    const bagsPerSheet = Math.max(bagsPerSheetVertical, bagsPerSheetHorizontal);
 
     // คำนวณพื้นที่ที่ใช้และพื้นที่ที่เหลือ
     const usedArea = bagsPerSheet * bagPaperWidth * bagPaperHeight;
@@ -107,7 +115,8 @@
         bagsPerSheet, 
         wastePercentage, 
         bagPaperWidth, 
-        bagPaperHeight 
+        bagPaperHeight,
+        isVerticalBetter
     };
 }
 
@@ -126,15 +135,32 @@ function drawLayoutMaster(canvasId, bagWidth, bagHeight, bagDepth, paperWidth, p
     // Draw bags
     ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
     ctx.strokeStyle = '#0a0';
-    const bagsPerRow = Math.floor(paperWidth / result.bagPaperWidth);
-    const bagsPerColumn = Math.floor(paperHeight / result.bagPaperHeight);
+    
+    let bagsPerRow, bagsPerColumn;
+    if (result.isVerticalBetter) {
+        bagsPerRow = Math.floor(paperWidth / result.bagPaperWidth);
+        bagsPerColumn = Math.floor(paperHeight / result.bagPaperHeight);
+    } else {
+        bagsPerRow = Math.floor(paperWidth / result.bagPaperHeight);
+        bagsPerColumn = Math.floor(paperHeight / result.bagPaperWidth);
+    }
     
     for (let i = 0; i < bagsPerColumn; i++) {
         for (let j = 0; j < bagsPerRow; j++) {
-            const x = j * result.bagPaperWidth * scale;
-            const y = i * result.bagPaperHeight * scale;
-            ctx.fillRect(x, y, result.bagPaperWidth * scale, result.bagPaperHeight * scale);
-            ctx.strokeRect(x, y, result.bagPaperWidth * scale, result.bagPaperHeight * scale);
+            let x, y, width, height;
+            if (result.isVerticalBetter) {
+                x = j * result.bagPaperWidth * scale;
+                y = i * result.bagPaperHeight * scale;
+                width = result.bagPaperWidth * scale;
+                height = result.bagPaperHeight * scale;
+            } else {
+                x = j * result.bagPaperHeight * scale;
+                y = i * result.bagPaperWidth * scale;
+                width = result.bagPaperHeight * scale;
+                height = result.bagPaperWidth * scale;
+            }
+            ctx.fillRect(x, y, width, height);
+            ctx.strokeRect(x, y, width, height);
         }
     }
 }
@@ -157,6 +183,7 @@ function calculate() {
     resultHTML += `<p>ขนาดกระดาษต่อถุง: ${result1.bagPaperWidth.toFixed(2)} x ${result1.bagPaperHeight.toFixed(2)} ซม.</p>`;
     resultHTML += `<p>จำนวนถุงต่อแผ่น: ${result1.bagsPerSheet}</p>`;
     resultHTML += `<p>เปอร์เซ็นต์ waste: ${result1.wastePercentage.toFixed(2)}%</p>`;
+    resultHTML += `<p>การจัดวาง: ${result1.isVerticalBetter ? 'แนวตั้ง' : 'แนวนอน'}</p>`;
     resultHTML += '<canvas id="canvas1" width="400" height="300"></canvas>';
 
     resultHTML += '<h3>ตัวเลือกที่ 2</h3>';
@@ -164,6 +191,7 @@ function calculate() {
     resultHTML += `<p>ขนาดกระดาษต่อถุง: ${result2.bagPaperWidth.toFixed(2)} x ${result2.bagPaperHeight.toFixed(2)} ซม.</p>`;
     resultHTML += `<p>จำนวนถุงต่อแผ่น: ${result2.bagsPerSheet}</p>`;
     resultHTML += `<p>เปอร์เซ็นต์ waste: ${result2.wastePercentage.toFixed(2)}%</p>`;
+    resultHTML += `<p>การจัดวาง: ${result2.isVerticalBetter ? 'แนวตั้ง' : 'แนวนอน'}</p>`;
     resultHTML += '<canvas id="canvas2" width="400" height="300"></canvas>';
 
     if (result1.wastePercentage < result2.wastePercentage) {
@@ -179,6 +207,7 @@ function calculate() {
     // Draw layout masters
     drawLayoutMaster('canvas1', bagWidth, bagHeight, bagDepth, paperWidth1, paperHeight1, result1);
     drawLayoutMaster('canvas2', bagWidth, bagHeight, bagDepth, paperWidth2, paperHeight2, result2);
+}
 }
     </script>
 </body>
