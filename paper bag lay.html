@@ -92,7 +92,7 @@
         const bagPaperWidth = 2 * bagWidth + 2 * bagDepth + 2;
         const bagPaperHeight = bagHeight + (bagDepth / 2) + 2;
 
-        // คำนวณจำนวนถุงที่สามารถผลิตได้ต่อแผ่น ทั้งแนวตั้ง แนวนอน และการหมุนถุง
+        // คำนวณจำนวนถุงที่สามารถผลิตได้ต่อแผ่น ทั้งแนวตั้งและแนวนอน
         const bagsPerRowVertical = Math.floor(paperWidth / bagPaperWidth);
         const bagsPerColumnVertical = Math.floor(paperHeight / bagPaperHeight);
         const bagsPerSheetVertical = bagsPerRowVertical * bagsPerColumnVertical;
@@ -101,18 +101,24 @@
         const bagsPerColumnHorizontal = Math.floor(paperHeight / bagPaperWidth);
         const bagsPerSheetHorizontal = bagsPerRowHorizontal * bagsPerColumnHorizontal;
 
+        // พื้นที่ว่างที่เหลือ
         const remainingWidthVertical = paperWidth - (bagsPerRowVertical * bagPaperWidth);
         const remainingHeightVertical = paperHeight - (bagsPerColumnVertical * bagPaperHeight);
 
         const remainingWidthHorizontal = paperWidth - (bagsPerRowHorizontal * bagPaperHeight);
         const remainingHeightHorizontal = paperHeight - (bagsPerColumnHorizontal * bagPaperWidth);
 
-        const bagsPerRowOptimize = Math.floor(remainingWidthVertical / bagPaperHeight);
-        const bagsPerColumnOptimize = Math.floor(remainingHeightVertical / bagPaperWidth);
-        const bagsPerSheetOptimize = bagsPerSheetVertical + (bagsPerRowOptimize * bagsPerColumnOptimize);
+        // คำนวณการวางถุงแบบหมุนในพื้นที่ว่างที่เหลือ
+        const bagsPerRowOptimizeVertical = Math.floor(remainingWidthVertical / bagPaperHeight);
+        const bagsPerColumnOptimizeVertical = Math.floor(remainingHeightVertical / bagPaperWidth);
+        const bagsPerSheetOptimizeVertical = bagsPerSheetVertical + (bagsPerRowOptimizeVertical * bagsPerColumnOptimizeVertical);
 
-        const isVerticalBetter = bagsPerSheetOptimize >= bagsPerSheetHorizontal;
-        const bagsPerSheet = Math.max(bagsPerSheetOptimize, bagsPerSheetHorizontal);
+        const bagsPerRowOptimizeHorizontal = Math.floor(remainingWidthHorizontal / bagPaperWidth);
+        const bagsPerColumnOptimizeHorizontal = Math.floor(remainingHeightHorizontal / bagPaperHeight);
+        const bagsPerSheetOptimizeHorizontal = bagsPerSheetHorizontal + (bagsPerRowOptimizeHorizontal * bagsPerColumnOptimizeHorizontal);
+
+        // เลือกการจัดวางที่ให้จำนวนถุงมากที่สุด
+        const bagsPerSheet = Math.max(bagsPerSheetVertical, bagsPerSheetHorizontal, bagsPerSheetOptimizeVertical, bagsPerSheetOptimizeHorizontal);
 
         // คำนวณพื้นที่ที่ใช้และพื้นที่ที่เหลือ
         const usedArea = bagsPerSheet * bagPaperWidth * bagPaperHeight;
@@ -125,7 +131,8 @@
             wastePercentage, 
             bagPaperWidth, 
             bagPaperHeight,
-            isVerticalBetter
+            isVerticalBetter: bagsPerSheetVertical >= bagsPerSheetHorizontal,
+            isOptimize: bagsPerSheetOptimizeVertical >= bagsPerSheetOptimizeHorizontal ? 'vertical' : 'horizontal'
         };
     }
 
@@ -178,17 +185,33 @@
         }
 
         // Draw rotated bags
-        ctx.fillStyle = 'rgba(255, 0, 255, 0.2)';
-        const bagsPerRowOptimize = Math.floor(remainingWidth / result.bagPaperHeight);
-        const bagsPerColumnOptimize = Math.floor(remainingHeight / result.bagPaperWidth);
-        for (let i = 0; i < bagsPerColumnOptimize; i++) {
-            for (let j = 0; j < bagsPerRowOptimize; j++) {
-                let x = (bagsPerRow * result.bagPaperWidth + j * result.bagPaperHeight) * scale;
-                let y = i * result.bagPaperWidth * scale;
-                let width = result.bagPaperHeight * scale;
-                let height = result.bagPaperWidth * scale;
-                ctx.fillRect(x, y, width, height);
-                ctx.strokeRect(x, y, width, height);
+        if (result.isOptimize === 'vertical') {
+            ctx.fillStyle = 'rgba(255, 0, 255, 0.2)';
+            const bagsPerRowOptimize = Math.floor(remainingWidth / result.bagPaperHeight);
+            const bagsPerColumnOptimize = Math.floor(remainingHeight / result.bagPaperWidth);
+            for (let i = 0; i < bagsPerColumnOptimize; i++) {
+                for (let j = 0; j < bagsPerRowOptimize; j++) {
+                    let x = (bagsPerRow * result.bagPaperWidth + j * result.bagPaperHeight) * scale;
+                    let y = i * result.bagPaperWidth * scale;
+                    let width = result.bagPaperHeight * scale;
+                    let height = result.bagPaperWidth * scale;
+                    ctx.fillRect(x, y, width, height);
+                    ctx.strokeRect(x, y, width, height);
+                }
+            }
+        } else {
+            ctx.fillStyle = 'rgba(255, 0, 255, 0.2)';
+            const bagsPerRowOptimize = Math.floor(remainingWidth / result.bagPaperWidth);
+            const bagsPerColumnOptimize = Math.floor(remainingHeight / result.bagPaperHeight);
+            for (let i = 0; i < bagsPerColumnOptimize; i++) {
+                for (let j = 0; j < bagsPerRowOptimize; j++) {
+                    let x = (bagsPerRow * result.bagPaperHeight + j * result.bagPaperWidth) * scale;
+                    let y = i * result.bagPaperHeight * scale;
+                    let width = result.bagPaperWidth * scale;
+                    let height = result.bagPaperHeight * scale;
+                    ctx.fillRect(x, y, width, height);
+                    ctx.strokeRect(x, y, width, height);
+                }
             }
         }
     }
