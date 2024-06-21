@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คำนวณการใช้กระดาษสำหรับถุงกระดาษ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .recommendation {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>คำนวณการใช้กระดาษสำหรับถุงกระดาษ</h1>
+    
+    <h2>ขนาดถุง</h2>
+    <div>
+        <label for="bagWidth">ความกว้างถุง (ซม.):</label>
+        <input type="number" id="bagWidth" value="23" min="1" step="0.1">
+    </div>
+    <div>
+        <label for="bagHeight">ความสูงถุง (ซม.):</label>
+        <input type="number" id="bagHeight" value="26" min="1" step="0.1">
+    </div>
+    <div>
+        <label for="bagDepth">ความลึกถุง (ซม.):</label>
+        <input type="number" id="bagDepth" value="7" min="1" step="0.1">
+    </div>
+
+    <h2>ขนาดกระดาษ</h2>
+    <h3>ตัวเลือกที่ 1</h3>
+    <div>
+        <label for="paperWidth1">ความกว้างกระดาษ (ซม.):</label>
+        <input type="number" id="paperWidth1" value="65" min="1" step="0.1">
+    </div>
+    <div>
+        <label for="paperHeight1">ความสูงกระดาษ (ซม.):</label>
+        <input type="number" id="paperHeight1" value="45" min="1" step="0.1">
+    </div>
+
+    <h3>ตัวเลือกที่ 2</h3>
+    <div>
+        <label for="paperWidth2">ความกว้างกระดาษ (ซม.):</label>
+        <input type="number" id="paperWidth2" value="70" min="1" step="0.1">
+    </div>
+    <div>
+        <label for="paperHeight2">ความสูงกระดาษ (ซม.):</label>
+        <input type="number" id="paperHeight2" value="50" min="1" step="0.1">
+    </div>
+
+    <button onclick="calculate()">คำนวณ</button>
+
+    <div id="result"></div>
+
+    <script>
+       function calculatePaperUsage(bagWidth, bagHeight, bagDepth, paperWidth, paperHeight) {
+    // คำนวณขนาดกระดาษที่ต้องการสำหรับถุงหนึ่งใบ
+    const bagPaperWidth = 2 * bagWidth + 2 * bagDepth + 2;
+    const bagPaperHeight = bagHeight + (bagDepth / 2) + 2;
+
+    // คำนวณจำนวนถุงที่สามารถผลิตได้ต่อแผ่น
+    const bagsPerRow = Math.floor(paperWidth / bagPaperWidth);
+    const bagsPerColumn = Math.floor(paperHeight / bagPaperHeight);
+    const bagsPerSheet = bagsPerRow * bagsPerColumn;
+
+    // คำนวณพื้นที่ที่ใช้และพื้นที่ที่เหลือ
+    const usedArea = bagsPerSheet * bagPaperWidth * bagPaperHeight;
+    const totalArea = paperWidth * paperHeight;
+    const wasteArea = totalArea - usedArea;
+    const wastePercentage = (wasteArea / totalArea) * 100;
+
+    return { 
+        bagsPerSheet, 
+        wastePercentage, 
+        bagPaperWidth, 
+        bagPaperHeight 
+    };
+}
+
+function drawLayoutMaster(canvasId, bagWidth, bagHeight, bagDepth, paperWidth, paperHeight, result) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    const scale = Math.min(canvas.width / paperWidth, canvas.height / paperHeight);
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw paper sheet
+    ctx.strokeStyle = '#000';
+    ctx.strokeRect(0, 0, paperWidth * scale, paperHeight * scale);
+    
+    // Draw bags
+    ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
+    ctx.strokeStyle = '#0a0';
+    const bagsPerRow = Math.floor(paperWidth / result.bagPaperWidth);
+    const bagsPerColumn = Math.floor(paperHeight / result.bagPaperHeight);
+    
+    for (let i = 0; i < bagsPerColumn; i++) {
+        for (let j = 0; j < bagsPerRow; j++) {
+            const x = j * result.bagPaperWidth * scale;
+            const y = i * result.bagPaperHeight * scale;
+            ctx.fillRect(x, y, result.bagPaperWidth * scale, result.bagPaperHeight * scale);
+            ctx.strokeRect(x, y, result.bagPaperWidth * scale, result.bagPaperHeight * scale);
+        }
+    }
+}
+
+function calculate() {
+    const bagWidth = parseFloat(document.getElementById('bagWidth').value);
+    const bagHeight = parseFloat(document.getElementById('bagHeight').value);
+    const bagDepth = parseFloat(document.getElementById('bagDepth').value);
+    const paperWidth1 = parseFloat(document.getElementById('paperWidth1').value);
+    const paperHeight1 = parseFloat(document.getElementById('paperHeight1').value);
+    const paperWidth2 = parseFloat(document.getElementById('paperWidth2').value);
+    const paperHeight2 = parseFloat(document.getElementById('paperHeight2').value);
+
+    const result1 = calculatePaperUsage(bagWidth, bagHeight, bagDepth, paperWidth1, paperHeight1);
+    const result2 = calculatePaperUsage(bagWidth, bagHeight, bagDepth, paperWidth2, paperHeight2);
+
+    let resultHTML = '<h2>ผลลัพธ์</h2>';
+    resultHTML += '<h3>ตัวเลือกที่ 1</h3>';
+    resultHTML += `<p>ขนาดกระดาษ: ${paperWidth1} x ${paperHeight1} ซม.</p>`;
+    resultHTML += `<p>ขนาดกระดาษต่อถุง: ${result1.bagPaperWidth.toFixed(2)} x ${result1.bagPaperHeight.toFixed(2)} ซม.</p>`;
+    resultHTML += `<p>จำนวนถุงต่อแผ่น: ${result1.bagsPerSheet}</p>`;
+    resultHTML += `<p>เปอร์เซ็นต์ waste: ${result1.wastePercentage.toFixed(2)}%</p>`;
+    resultHTML += '<canvas id="canvas1" width="400" height="300"></canvas>';
+
+    resultHTML += '<h3>ตัวเลือกที่ 2</h3>';
+    resultHTML += `<p>ขนาดกระดาษ: ${paperWidth2} x ${paperHeight2} ซม.</p>`;
+    resultHTML += `<p>ขนาดกระดาษต่อถุง: ${result2.bagPaperWidth.toFixed(2)} x ${result2.bagPaperHeight.toFixed(2)} ซม.</p>`;
+    resultHTML += `<p>จำนวนถุงต่อแผ่น: ${result2.bagsPerSheet}</p>`;
+    resultHTML += `<p>เปอร์เซ็นต์ waste: ${result2.wastePercentage.toFixed(2)}%</p>`;
+    resultHTML += '<canvas id="canvas2" width="400" height="300"></canvas>';
+
+    if (result1.wastePercentage < result2.wastePercentage) {
+        resultHTML += `<p class="recommendation">ตัวเลือกที่แนะนำ: ตัวเลือกที่ 1 (ขนาด ${paperWidth1} x ${paperHeight1} ซม.) มี waste น้อยกว่า</p>`;
+    } else if (result2.wastePercentage < result1.wastePercentage) {
+        resultHTML += `<p class="recommendation">ตัวเลือกที่แนะนำ: ตัวเลือกที่ 2 (ขนาด ${paperWidth2} x ${paperHeight2} ซม.) มี waste น้อยกว่า</p>`;
+    } else {
+        resultHTML += '<p class="recommendation">ทั้งสองตัวเลือกมี waste เท่ากัน คุณสามารถเลือกตัวเลือกใดก็ได้</p>';
+    }
+
+    document.getElementById('result').innerHTML = resultHTML;
+
+    // Draw layout masters
+    drawLayoutMaster('canvas1', bagWidth, bagHeight, bagDepth, paperWidth1, paperHeight1, result1);
+    drawLayoutMaster('canvas2', bagWidth, bagHeight, bagDepth, paperWidth2, paperHeight2, result2);
+}
+    </script>
+</body>
+</html>
