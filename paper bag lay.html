@@ -266,19 +266,18 @@
         }
 
         function generateResult(result, paperWidth, paperHeight, bagWidth, bagHeight, D, W, H, P, canvasId) {
-            let resultHTML = `<h2>ผลลัพธ์ (กระดาษขนาด ${paperWidth.toFixed(2)} x ${paperHeight.toFixed(2)} ซม.)</h2>`;
-            resultHTML += `<p><strong>ขนาดกระดาษ:</strong> ${paperWidth.toFixed(2)} x ${paperHeight.toFixed(2)} ซม.</p>`;
-            resultHTML += `<p><strong>ขนาดถุง:</strong> D=${D.toFixed(2)} ซม., W=${W.toFixed(2)} ซม., H=${H.toFixed(2)} ซม., P=${P.toFixed(2)} ซม.</p>`;
-            resultHTML += `<p><strong>ขนาดกระดาษต่อถุง:</strong> ${bagWidth.toFixed(2)} x ${bagHeight.toFixed(2)} ซม.</p>`;
-            resultHTML += `<p><strong>จำนวนถุงต่อแผ่น:</strong> ${result.totalBags} (${result.bagsPerRow * result.bagsPerCol} ในพื้นที่หลัก + ${result.extraBags} ในพื้นที่เหลือ)</p>`;
-            resultHTML += `<p><strong>การจัดวาง:</strong> ${result.bagsPerRow} แถว x ${result.bagsPerCol} คอลัมน์ ${result.extraBags > 0 ? '+ พื้นที่เพิ่มเติม' : ''}</p>`;
-            resultHTML += `<p><strong>พื้นที่ใช้งาน:</strong> ${result.usedWidth.toFixed(2)} x ${result.usedHeight.toFixed(2)} ซม.</p>`;
-            resultHTML += `<p><strong>เปอร์เซ็นต์ waste:</strong> ${result.wastePercentage.toFixed(2)}%</p>`;
-            resultHTML += `<p class="recommendation">วิธีการจัดวางที่ดีที่สุด
-            resultHTML += `<p class="recommendation">วิธีการจัดวางที่ดีที่สุด: ${result.rotation ? 'หมุน 90 องศา' : 'ไม่หมุน'} ในพื้นที่หลัก, ${result.extraVertical ? 'แนวตั้ง' : 'แนวนอน'} ในพื้นที่เพิ่มเติม</p>`;
-            resultHTML += `<canvas id="${canvasId}" width="400" height="300"></canvas>`;
-            return resultHTML;
-        }
+    let resultHTML = `<h2>ผลลัพธ์ (กระดาษขนาด ${paperWidth.toFixed(2)} x ${paperHeight.toFixed(2)} ซม.)</h2>`;
+    resultHTML += `<p><strong>ขนาดกระดาษ:</strong> ${paperWidth.toFixed(2)} x ${paperHeight.toFixed(2)} ซม.</p>`;
+    resultHTML += `<p><strong>ขนาดถุง:</strong> D=${D.toFixed(2)} ซม., W=${W.toFixed(2)} ซม., H=${H.toFixed(2)} ซม., P=${P.toFixed(2)} ซม.</p>`;
+    resultHTML += `<p><strong>ขนาดกระดาษต่อถุง:</strong> ${bagWidth.toFixed(2)} x ${bagHeight.toFixed(2)} ซม.</p>`;
+    resultHTML += `<p><strong>จำนวนถุงต่อแผ่น:</strong> ${result.totalBags} (${result.bagsPerRow * result.bagsPerCol} ในพื้นที่หลัก + ${result.extraBags} ในพื้นที่เหลือ)</p>`;
+    resultHTML += `<p><strong>การจัดวาง:</strong> ${result.bagsPerRow} แถว x ${result.bagsPerCol} คอลัมน์ ${result.extraBags > 0 ? '+ พื้นที่เพิ่มเติม' : ''}</p>`;
+    resultHTML += `<p><strong>พื้นที่ใช้งาน:</strong> ${result.usedWidth.toFixed(2)} x ${result.usedHeight.toFixed(2)} ซม.</p>`;
+    resultHTML += `<p><strong>เปอร์เซ็นต์ waste:</strong> ${result.wastePercentage.toFixed(2)}%</p>`;
+    resultHTML += `<p class="recommendation">วิธีการจัดวางที่ดีที่สุด: ${result.rotation ? 'หมุน 90 องศา' : 'ไม่หมุน'} ในพื้นที่หลัก, ${result.extraVertical ? 'แนวตั้ง' : 'แนวนอน'} ในพื้นที่เพิ่มเติม</p>`;
+    resultHTML += `<canvas id="${canvasId}" width="400" height="300"></canvas>`;
+    return resultHTML;
+}
 
         function calculate() {
             const D = getValueInCm(parseFloat(document.getElementById('bagD').value), document.getElementById('bagDUnit').value);
