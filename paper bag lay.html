@@ -304,6 +304,22 @@
             drawLayout('layoutCanvas1', paperWidth1, paperHeight1, bagWidth, bagHeight, result1);
             drawLayout('layoutCanvas2', paperWidth2, paperHeight2, bagWidth, bagHeight, result2);
             drawLayout('layoutCanvas3', paperWidth3, paperHeight3, bagWidth, bagHeight, result3);
+            const results = [
+        { name: "ตัวเลือกที่ 1", waste: result1.wastePercentage },
+        { name: "ตัวเลือกที่ 2", waste: result2.wastePercentage },
+        { name: "ตัวเลือกที่ 3", waste: result3.wastePercentage }
+    ];
+    const bestOption = results.reduce((min, option) => option.waste < min.waste ? option : min);
+    
+    const summaryDiv = document.createElement('div');
+    summaryDiv.innerHTML = `
+        <h2>สรุปผล</h2>
+        <p style="background-color: #e8f5e9; padding: 10px; border-radius: 5px;">
+            <strong>ตัวเลือกที่ดีที่สุด:</strong> ${bestOption.name} (เสีย Waste ${bestOption.waste.toFixed(2)}%)
+        </p>
+    `;
+    document.body.appendChild(summaryDiv);
+}
         }
     </script>
 </body>
