@@ -170,6 +170,13 @@
         }
 
         function calculateOptimalLayout(paperWidth, paperHeight, bagWidth, bagHeight) {
+              if (paperWidth < bagWidth && paperHeight < bagWidth) {
+        return { error: "ขนาดกระดาษเล็กเกินไป ไม่สามารถทำถุงได้" };
+    }
+    if ((paperWidth < bagWidth && paperHeight < bagHeight) || 
+        (paperWidth < bagHeight && paperHeight < bagWidth)) {
+        return { error: "ขนาดกระดาษเล็กเกินไป ไม่สามารถทำถุงได้" };
+    }
             const layouts = [
                 { rotation: false, bagsPerRow: Math.floor(paperWidth / bagWidth), bagsPerCol: Math.floor(paperHeight / bagHeight) },
                 { rotation: true, bagsPerRow: Math.floor(paperWidth / bagHeight), bagsPerCol: Math.floor(paperHeight / bagWidth) }
@@ -266,6 +273,10 @@
         }
 
         function generateResult(result, paperWidth, paperHeight, bagWidth, bagHeight, D, W, H, P, canvasId) {
+            if (result.error) {
+        return `<h2>ผลลัพธ์ (กระดาษขนาด ${paperWidth.toFixed(2)} x ${paperHeight.toFixed(2)} ซม.)</h2>
+                <p style="color: red;"><strong>${result.error}</strong></p>`;
+    }
     let resultHTML = `<h2>ผลลัพธ์ (กระดาษขนาด ${paperWidth.toFixed(2)} x ${paperHeight.toFixed(2)} ซม.)</h2>`;
     resultHTML += `<p><strong>ขนาดกระดาษ:</strong> ${paperWidth.toFixed(2)} x ${paperHeight.toFixed(2)} ซม.</p>`;
     resultHTML += `<p><strong>ขนาดถุง:</strong> D=${D.toFixed(2)} ซม., W=${W.toFixed(2)} ซม., H=${H.toFixed(2)} ซม., P=${P.toFixed(2)} ซม.</p>`;
@@ -279,48 +290,57 @@
     return resultHTML;
 }
 
-        function calculate() {
-            const D = getValueInCm(parseFloat(document.getElementById('bagD').value), document.getElementById('bagDUnit').value);
-            const W = getValueInCm(parseFloat(document.getElementById('bagW').value), document.getElementById('bagWUnit').value);
-            const H = getValueInCm(parseFloat(document.getElementById('bagH').value), document.getElementById('bagHUnit').value);
-            const P = getValueInCm(parseFloat(document.getElementById('bagP').value), document.getElementById('bagPUnit').value);
-            const { bagWidth, bagHeight } = calculateBagSize(D, W, H, P);
+function calculate() {
+    const D = getValueInCm(parseFloat(document.getElementById('bagD').value), document.getElementById('bagDUnit').value);
+    const W = getValueInCm(parseFloat(document.getElementById('bagW').value), document.getElementById('bagWUnit').value);
+    const H = getValueInCm(parseFloat(document.getElementById('bagH').value), document.getElementById('bagHUnit').value);
+    const P = getValueInCm(parseFloat(document.getElementById('bagP').value), document.getElementById('bagPUnit').value);
+    const { bagWidth, bagHeight } = calculateBagSize(D, W, H, P);
 
-            const paperWidth1 = getValueInCm(parseFloat(document.getElementById('paperWidth1').value), document.getElementById('paperWidth1Unit').value);
-            const paperHeight1 = getValueInCm(parseFloat(document.getElementById('paperHeight1').value), document.getElementById('paperHeight1Unit').value);
-            const paperWidth2 = getValueInCm(parseFloat(document.getElementById('paperWidth2').value), document.getElementById('paperWidth2Unit').value);
-            const paperHeight2 = getValueInCm(parseFloat(document.getElementById('paperHeight2').value), document.getElementById('paperHeight2Unit').value);
-            const paperWidth3 = getValueInCm(parseFloat(document.getElementById('paperWidth3').value), document.getElementById('paperWidth3Unit').value);
-            const paperHeight3 = getValueInCm(parseFloat(document.getElementById('paperHeight3').value), document.getElementById('paperHeight3Unit').value);
+    const paperWidth1 = getValueInCm(parseFloat(document.getElementById('paperWidth1').value), document.getElementById('paperWidth1Unit').value);
+    const paperHeight1 = getValueInCm(parseFloat(document.getElementById('paperHeight1').value), document.getElementById('paperHeight1Unit').value);
+    const paperWidth2 = getValueInCm(parseFloat(document.getElementById('paperWidth2').value), document.getElementById('paperWidth2Unit').value);
+    const paperHeight2 = getValueInCm(parseFloat(document.getElementById('paperHeight2').value), document.getElementById('paperHeight2Unit').value);
+    const paperWidth3 = getValueInCm(parseFloat(document.getElementById('paperWidth3').value), document.getElementById('paperWidth3Unit').value);
+    const paperHeight3 = getValueInCm(parseFloat(document.getElementById('paperHeight3').value), document.getElementById('paperHeight3Unit').value);
 
-            const result1 = calculateOptimalLayout(paperWidth1, paperHeight1, bagWidth, bagHeight);
-            const result2 = calculateOptimalLayout(paperWidth2, paperHeight2, bagWidth, bagHeight);
-            const result3 = calculateOptimalLayout(paperWidth3, paperHeight3, bagWidth, bagHeight);
+    const result1 = calculateOptimalLayout(paperWidth1, paperHeight1, bagWidth, bagHeight);
+    const result2 = calculateOptimalLayout(paperWidth2, paperHeight2, bagWidth, bagHeight);
+    const result3 = calculateOptimalLayout(paperWidth3, paperHeight3, bagWidth, bagHeight);
 
-            document.getElementById('result1').innerHTML = generateResult(result1, paperWidth1, paperHeight1, bagWidth, bagHeight, D, W, H, P, 'layoutCanvas1');
-            document.getElementById('result2').innerHTML = generateResult(result2, paperWidth2, paperHeight2, bagWidth, bagHeight, D, W, H, P, 'layoutCanvas2');
-            document.getElementById('result3').innerHTML = generateResult(result3, paperWidth3, paperHeight3, bagWidth, bagHeight, D, W, H, P, 'layoutCanvas3');
+    document.getElementById('result1').innerHTML = generateResult(result1, paperWidth1, paperHeight1, bagWidth, bagHeight, D, W, H, P, 'layoutCanvas1');
+    document.getElementById('result2').innerHTML = generateResult(result2, paperWidth2, paperHeight2, bagWidth, bagHeight, D, W, H, P, 'layoutCanvas2');
+    document.getElementById('result3').innerHTML = generateResult(result3, paperWidth3, paperHeight3, bagWidth, bagHeight, D, W, H, P, 'layoutCanvas3');
 
-            drawLayout('layoutCanvas1', paperWidth1, paperHeight1, bagWidth, bagHeight, result1);
-            drawLayout('layoutCanvas2', paperWidth2, paperHeight2, bagWidth, bagHeight, result2);
-            drawLayout('layoutCanvas3', paperWidth3, paperHeight3, bagWidth, bagHeight, result3);
-            const results = [
-        { name: "ตัวเลือกที่ 1", waste: result1.wastePercentage },
-        { name: "ตัวเลือกที่ 2", waste: result2.wastePercentage },
-        { name: "ตัวเลือกที่ 3", waste: result3.wastePercentage }
+    if (!result1.error) drawLayout('layoutCanvas1', paperWidth1, paperHeight1, bagWidth, bagHeight, result1);
+    if (!result2.error) drawLayout('layoutCanvas2', paperWidth2, paperHeight2, bagWidth, bagHeight, result2);
+    if (!result3.error) drawLayout('layoutCanvas3', paperWidth3, paperHeight3, bagWidth, bagHeight, result3);
+             const results = [
+        { name: "ตัวเลือกที่ 1", waste: result1.error ? Infinity : result1.wastePercentage },
+        { name: "ตัวเลือกที่ 2", waste: result2.error ? Infinity : result2.wastePercentage },
+        { name: "ตัวเลือกที่ 3", waste: result3.error ? Infinity : result3.wastePercentage }
     ];
-    const bestOption = results.reduce((min, option) => option.waste < min.waste ? option : min);
+    const validResults = results.filter(r => r.waste !== Infinity);
     
     const summaryDiv = document.createElement('div');
-    summaryDiv.innerHTML = `
-        <h2>สรุปผล</h2>
-        <p style="background-color: #e8f5e9; padding: 10px; border-radius: 5px;">
-            <strong>ตัวเลือกที่ดีที่สุด:</strong> ${bestOption.name} (เสีย Waste ${bestOption.waste.toFixed(2)}%)
-        </p>
-    `;
+    if (validResults.length > 0) {
+        const bestOption = validResults.reduce((min, option) => option.waste < min.waste ? option : min);
+        summaryDiv.innerHTML = `
+            <h2>สรุปผล</h2>
+            <p style="background-color: #e8f5e9; padding: 10px; border-radius: 5px;">
+                <strong>ตัวเลือกที่ดีที่สุด:</strong> ${bestOption.name} (เสีย Waste ${bestOption.waste.toFixed(2)}%)
+            </p>
+        `;
+    } else {
+        summaryDiv.innerHTML = `
+            <h2>สรุปผล</h2>
+            <p style="background-color: #ffebee; padding: 10px; border-radius: 5px;">
+                <strong>ไม่มีตัวเลือกที่สามารถทำถุงได้ กรุณาเพิ่มขนาดกระดาษ</strong>
+            </p>
+        `;
+    }
     document.body.appendChild(summaryDiv);
-
-        }
+}
     </script>
 </body>
 </html>
